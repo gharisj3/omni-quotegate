@@ -1,0 +1,252 @@
+:root {
+    --bg: #f4f1ea;
+    --panel: #fffdf8;
+    --line: #ddd3c4;
+    --text: #1d2430;
+    --muted: #6c737f;
+    --accent: #0f5f54;
+    --accent-soft: #dcefe8;
+    --risk: #c65a28;
+    --risk-soft: #f8e3d7;
+    --success: #257a45;
+    --success-soft: #dff2e3;
+    --navy: #123047;
+    --shadow: 0 20px 45px rgba(18, 48, 71, 0.08);
+    font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(circle at top left, rgba(15, 95, 84, 0.10), transparent 28%),
+        linear-gradient(180deg, #f7f3ec 0%, var(--bg) 100%);
+    color: var(--text);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+}
+
+.sidebar {
+    background: linear-gradient(180deg, var(--navy), #153e56);
+    color: #fff;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sidebar h1,
+.sidebar p {
+    margin: 0 0 12px;
+}
+
+.tagline {
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.5;
+}
+
+.nav {
+    display: grid;
+    gap: 10px;
+}
+
+.nav a {
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.content {
+    padding: 32px;
+}
+
+.hero,
+.panel,
+.card {
+    background: var(--panel);
+    border: 1px solid rgba(221, 211, 196, 0.8);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+}
+
+.hero,
+.panel {
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.cards,
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.card {
+    padding: 22px;
+}
+
+.card strong,
+.metrics strong {
+    display: block;
+    font-size: 1.4rem;
+    margin-top: 8px;
+}
+
+.banner {
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: inline-block;
+}
+
+.eyebrow,
+.muted {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+}
+
+.panel-header,
+.actions,
+.actions-inline,
+.footer-actions,
+.metrics {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+}
+
+.button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 14px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.button.small {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+.button.ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+
+.button.success {
+    background: var(--success);
+}
+
+.button.danger {
+    background: var(--risk);
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge.neutral,
+.badge.new,
+.badge.analyzed,
+.badge.quote_drafted,
+.badge.drafted {
+    background: #e8edf3;
+    color: #37506a;
+}
+
+.badge.approval_pending,
+.badge.pending,
+.badge.risk {
+    background: var(--risk-soft);
+    color: var(--risk);
+}
+
+.badge.approved,
+.badge.success {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge.rejected {
+    background: #f4d8d8;
+    color: #9b2d2d;
+}
+
+.timeline {
+    display: grid;
+    gap: 14px;
+}
+
+.timeline-item {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.flag-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.risk-copy {
+    color: var(--risk);
+}
+
+@media (max-width: 960px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        gap: 24px;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    .timeline-item {
+        grid-template-columns: 1fr;
+    }
+}

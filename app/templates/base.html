@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omni QuoteGate</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div>
+                <p class="eyebrow">Karachi Hardware Distributors</p>
+                <h1>Omni QuoteGate</h1>
+                <p class="tagline">AI drafts the quote. Your team decides. Every step is logged.</p>
+            </div>
+            <nav class="nav">
+                <a href="/">Dashboard</a>
+                <a href="/inquiries">Inquiries</a>
+                <a href="/approvals">Approvals</a>
+                <a href="/audit">Audit</a>
+            </nav>
+        </aside>
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

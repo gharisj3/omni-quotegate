@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <p class="eyebrow">{{ inquiry.source|upper }}</p>
+            <h2>Inquiry #{{ inquiry.id }}</h2>
+        </div>
+        <span class="badge {{ inquiry.status }}">{{ inquiry.status }}</span>
+    </div>
+    <div class="detail-grid">
+        <article class="card">
+            <h3>Raw customer message</h3>
+            <p>{{ inquiry.raw_message }}</p>
+        </article>
+        <article class="card">
+            <h3>Customer profile</h3>
+            <p><strong>{{ inquiry.customer.name }}</strong></p>
+            <p>{{ inquiry.customer.email }}</p>
+            <p>Credit limit: {{ format_currency(inquiry.customer.credit_limit) }}</p>
+            <p>Current balance: {{ format_currency(inquiry.customer.current_balance) }}</p>
+            <p>Standard discount: {{ inquiry.customer.standard_discount_percent }}%</p>
+            <p>Risk level: {{ inquiry.customer.risk_level }}</p>
+        </article>
+    </div>
+    <div class="actions">
+        <form method="post" action="/inquiries/{{ inquiry.id }}/analyze">
+            <button class="button" type="submit">Analyze inquiry</button>
+        </form>
+        <form method="post" action="/inquiries/{{ inquiry.id }}/draft-quote">
+            <button class="button" type="submit">Draft quote</button>
+        </form>
+        {% if approval and approval.status == "pending" %}
+        <a class="button ghost" href="/approvals">Send to approval if required</a>
+        {% endif %}
+    </div>
+</section>
+
+{% if inquiry.quote_draft %}
+<section class="detail-grid">
+    <article class="panel">
+        <div class="panel-header">
+            <h3>AI Quote Draft</h3>
+            <span class="badge {% if inquiry.quote_draft.approval_required %}risk{% else %}approved{% endif %}">
+                {% if inquiry.quote_draft.approval_required %}approval required{% else %}ready{% endif %}
+            </span>
+        </div>
+        <p>{{ inquiry.quote_draft.customer_reply_draft }}</p>
+        <div class="metrics">
+            <div><span>Subtotal</span><strong>{{ format_currency(inquiry.quote_draft.subtotal) }}</strong></div>
+            <div><span>Discount</span><strong>{{ inquiry.quote_draft.discount_percent }}%</strong></div>
+            <div><span>Total</span><strong>{{ format_currency(inquiry.quote_draft.total_amount) }}</strong></div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Requested</th>
+                    <th>Available</th>
+                    <th>Quoted</th>
+                    <th>Line total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line in inquiry.quote_draft.lines %}
+                <tr>
+                    <td>{{ line.product.name }}</td>
+                    <td>{{ line.requested_qty }}</td>
+                    <td>{{ line.available_qty }}</td>
+                    <td>{{ line.quoted_qty }}</td>
+                    <td>{{ format_currency(line.line_total) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+    <article class="panel">
+        <h3>ERP Lookup Panel</h3>
+        {% if inquiry.quote_draft.lines %}
+        {% set line = inquiry.quote_draft.lines[0] %}
+        <p><strong>{{ line.product.name }}</strong> ({{ line.product.sku }})</p>
+        <p>Category: {{ line.product.category }}</p>
+        <p>Stock available: {{ line.available_qty }}</p>
+        <p>List price: {{ format_currency(line.unit_price) }}</p>
+        {% if line.stock_warning %}
+        <p class="risk-copy">{{ line.stock_warning }}</p>
+        {% endif %}
+        {% else %}
+        <p class="risk-copy">Manual price review required because no confident product match was found.</p>
+        {% endif %}
+        <h3>Risk flags</h3>
+        <div class="flag-list">
+            {% for flag in inquiry.quote_draft.risk_summary.split(",") %}
+            <span class="badge {% if flag == 'No material risk flags.' %}approved{% else %}risk{% endif %}">{{ flag.strip() }}</span>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>Audit timeline</h3>
+    </div>
+    <div class="timeline">
+        {% for event in audit_events %}
+        <div class="timeline-item">
+            <span class="badge neutral">{{ event.event_type }}</span>
+            <div>
+                <strong>{{ event.message }}</strong>
+                <p>{{ event.actor }} • {{ event.created_at.strftime("%Y-%m-%d %H:%M") }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <h2>Inquiry Inbox</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Source</th>
+                <th>Customer</th>
+                <th>Message preview</th>
+                <th>Status</th>
+                <th>Inquiry type</th>
+                <th>Created time</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inquiry in inquiries %}
+            <tr>
+                <td>{{ inquiry.source }}</td>
+                <td>{{ inquiry.customer.name }}</td>
+                <td>{{ inquiry.raw_message[:70] }}{% if inquiry.raw_message|length > 70 %}...{% endif %}</td>
+                <td><span class="badge {{ inquiry.status }}">{{ inquiry.status }}</span></td>
+                <td>{{ inquiry.inquiry_type or "pending" }}</td>
+                <td>{{ inquiry.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                <td><a class="button small" href="/inquiries/{{ inquiry.id }}">Open</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

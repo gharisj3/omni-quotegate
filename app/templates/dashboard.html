@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+    <div>
+        <p class="eyebrow">Controlled ERP Sales Automation</p>
+        <h2>Dashboard</h2>
+        <p class="banner">AI can draft and recommend. Only humans can approve risky quote actions.</p>
+    </div>
+</section>
+
+<section class="cards">
+    <article class="card">
+        <span>Total inquiries</span>
+        <strong>{{ total_inquiries }}</strong>
+    </article>
+    <article class="card">
+        <span>Pending approvals</span>
+        <strong>{{ pending_approvals }}</strong>
+    </article>
+    <article class="card">
+        <span>Approved quotes</span>
+        <strong>{{ approved_quotes }}</strong>
+    </article>
+    <article class="card">
+        <span>Estimated quote value</span>
+        <strong>{{ format_currency(estimated_value) }}</strong>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>Recent audit events</h3>
+    </div>
+    <div class="timeline">
+        {% for event in recent_events %}
+        <div class="timeline-item">
+            <span class="badge neutral">{{ event.event_type }}</span>
+            <div>
+                <strong>{{ event.message }}</strong>
+                <p>{{ event.actor }} • {{ event.created_at.strftime("%Y-%m-%d %H:%M") }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<footer class="footer-actions">
+    <form method="post" action="/admin/reset-demo">
+        <button class="button ghost" type="submit">Reset Demo Data</button>
+    </form>
+</footer>
+{% endblock %}

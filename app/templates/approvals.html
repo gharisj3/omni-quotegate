@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <h2>Approval Queue</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Quote total</th>
+                <th>Reason</th>
+                <th>Risk flags</th>
+                <th>Status</th>
+                <th>Created at</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for approval in approvals %}
+            <tr>
+                <td>{{ approval.quote_draft.customer.name }}</td>
+                <td>{{ format_currency(approval.quote_draft.total_amount) }}</td>
+                <td>{{ approval.reason }}</td>
+                <td>{{ approval.risk_flags_json }}</td>
+                <td><span class="badge {{ approval.status }}">{{ approval.status }}</span></td>
+                <td>{{ approval.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                <td class="actions-inline">
+                    {% if approval.status == "pending" %}
+                    <form method="post" action="/approvals/{{ approval.id }}/approve">
+                        <button class="button small success" type="submit">Approve</button>
+                    </form>
+                    <form method="post" action="/approvals/{{ approval.id }}/reject">
+                        <button class="button small danger" type="submit">Reject</button>
+                    </form>
+                    {% else %}
+                    <span class="muted">Decided by {{ approval.decided_by }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

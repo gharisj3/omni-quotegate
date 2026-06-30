@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <h2>Audit Timeline</h2>
+    </div>
+    <div class="timeline">
+        {% for event in events %}
+        <div class="timeline-item">
+            <span class="badge neutral">{{ event.event_type }}</span>
+            <div>
+                <strong>{{ event.message }}</strong>
+                <p>{{ event.entity_type }} #{{ event.entity_id }} • {{ event.actor }} • {{ event.created_at.strftime("%Y-%m-%d %H:%M") }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
