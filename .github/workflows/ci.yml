@@ -12,9 +12,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
       - name: Install dependencies
         run: pip install -r requirements.txt
+      - name: Lint
+        run: |
+          ruff check .
+          ruff format --check .
       - name: Import check
         run: python -m compileall app
       - name: Run tests
-        run: pytest
+        run: pytest -q

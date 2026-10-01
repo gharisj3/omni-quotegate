@@ -1,111 +1,80 @@
 # Omni QuoteGate
 
-AI drafts the quote. Your team decides. Every step is logged.
+A controlled quotation workflow that keeps approval decisions and their reasons visible in an auditable sales process.
 
-Omni QuoteGate shows the safer pattern for AI inside revenue operations: AI can read context and draft actions, but humans approve risky business decisions and every step is logged.
+[![CI](https://github.com/gharisj3/omni-quotegate/actions/workflows/ci.yml/badge.svg)](https://github.com/gharisj3/omni-quotegate/actions/workflows/ci.yml)
 
-Omni QuoteGate is a controlled ERP sales automation demo for wholesale and distribution teams that need faster quote handling without giving automation final authority over risky decisions. The app simulates how a sales inquiry moves from message intake to product lookup, customer credit review, quote drafting, approval routing, and audit logging.
+## Why this exists
 
-## What Makes It Different
+Sales teams need to respond to quote requests while checking stock, discounts, and customer credit. This reference app demonstrates deterministic quote drafting with a required human approval step for flagged cases. Its current quote engine is rules based; it does not call an LLM.
 
-This project is intentionally not a chatbot or support-ticket copilot. It focuses on revenue-facing inquiry handling, deterministic quote drafting, approval guardrails, and append-only audit history so the boundary between AI assistance and human control is visible in the product itself.
-
-## Demo Workflow
-
-1. Open the inquiry inbox.
-2. Review a customer request from WhatsApp, email, or chat.
-3. Analyze the inquiry to classify intent and match product/customer context.
-4. Draft a quote using mocked ERP data.
-5. Send risky quotes into the approval queue automatically.
-6. Approve or reject and inspect the audit trail.
+This is a public reimplementation of patterns I've used in production client work. Client code and data are not included.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A["Inquiry Inbox"] --> B["AI Quote Engine"]
-    B --> C["Mock ERP Adapter"]
-    B --> D["Quote Draft"]
-    D --> E["Approval Queue"]
-    E --> F["Human Approver"]
-    B --> G["Audit Trail"]
-    F --> G
-    C --> G
+    I[Sales inquiry] --> E[Quote workflow]
+    E --> D[Rules-based quote draft]
+    E --> X[Seeded ERP adapter]
+    D --> A[Approval queue]
+    A -->|approve or reject with reason| H[Human reviewer]
+    E --> L[(Audit event store)]
+    H --> L
+    L --> V[Audit view and API]
 ```
 
-## Screenshots
+- `app/services/ai_quote_engine.py` classifies inquiry text and computes a quote using deterministic rules.
+- `app/services/mock_erp.py` supplies seeded customer, product, stock, and credit context.
+- Approval rules route risky quotes for a human decision.
+- SQLite stores inquiries, quote drafts, approvals, and audit events.
 
-Add screenshots after running the app locally:
+## Guardrails and security model
 
-- `docs/screenshots/dashboard.png`
-- `docs/screenshots/inquiry-detail.png`
-- `docs/screenshots/approvals.png`
+The quote engine can classify a request, read seeded ERP context, and prepare a draft. It cannot approve a quote. Stock, discount, saleability, and credit checks run in Python before an approval decision. The approval endpoints record the reviewer, decision, and rejection reason. The demo uses only synthetic seed records; no third-party messaging or model account is called.
 
-## Tech Stack
+## Quickstart
 
-- Python 3.12+
-- FastAPI
-- Jinja2 templates
-- SQLAlchemy 2.x
-- SQLite by default
-- Pydantic v2
-- Pytest
-- Docker and docker-compose
+Requires Python 3.11 or newer.
 
-## Mocked vs Production-Ready
-
-Mocked in v1:
-
-- ERP adapter uses local seeded data
-- Inquiry sources are seeded examples, not live WhatsApp or email integrations
-- Deterministic engine simulates AI behavior without a real LLM
-
-Production-ready foundations:
-
-- Clear adapter boundary for ERP integrations
-- Environment-driven database configuration
-- Approval and audit workflow separation
-- JSON API plus server-rendered UI
-
-## Local Setup
-
-```bash
-cp .env.example .env
+```sh
 python -m venv .venv
-pip install -r requirements.txt
-python scripts/seed_demo.py
-uvicorn app.main:app --reload
+# Linux/macOS: . .venv/bin/activate
+# Windows PowerShell: .\.venv\Scripts\Activate.ps1
+make setup
+make test
+make demo
 ```
 
-## Docker Setup
+Start the interactive app with `uvicorn app.main:app --reload`. It uses the local SQLite database configured by `DATABASE_URL`.
 
-```bash
-cp .env.example .env
-docker compose up --build
+## Demo
+
+`make demo` creates an isolated temporary SQLite database, drafts a quote, rejects it with a reason, redrafts, approves, and prints the event sequence.
+
+```text
+Fixture mode: seeded local ERP records; no API or external service call.
+{
+  "steps": ["draft quote", {"reject": "Requested quantity exceeds available stock."}, "redraft quote", "approve quote"],
+  "audit_events": ["quote_drafted", "approval_requested", "approval_rejected", "quote_drafted", "approval_approved"]
+}
 ```
 
-## Tests
+## Evaluation and testing
 
-```bash
-python -m compileall app
-pytest
-```
+The local pytest suite passes 12 tests. It checks approval rules, quote creation, audit writes, and that a rejection without a reason is refused while a supplied reason is persisted. `ruff check .` and `ruff format --check .` pass locally.
 
-## Roadmap
+## Design decisions and trade-offs
 
-- Swap the deterministic engine in `app/services/ai_quote_engine.py` for a real LLM tool-calling layer. Its `classify_inquiry`, `lookup_product`, `lookup_customer`, and `propose_quote` interfaces already map to function-calling patterns.
-- Replace the mock ERP adapter with an Odoo XML-RPC adapter.
-- Add role-based authentication and secure approval actions.
-- Lock down the demo reset endpoint for non-public environments.
-- Add live channel ingestion for WhatsApp and email.
+- SQLite and seeded adapters keep the demonstration self-contained.
+- Deterministic calculations make stock and credit outcomes reproducible.
+- Human approval is a separate route from draft generation.
+- The current rules engine keeps model behavior out of transaction decisions; a provider adapter would need its own fixtures and validation tests before it could be described as an LLM workflow.
 
-## Portfolio / Hire Me
+## Production notes
 
-Omni QuoteGate is designed as a portfolio project for ERP automation, Odoo integration planning, Python backend work, controlled AI operations, and sales workflow modernization. It is meant to show how AI assistance can fit into high-trust revenue processes without bypassing human approval.
+A deployed service would add authenticated user identity, authorization by role and company, database migrations, rate limits, backups, structured observability, and retention controls. A live model adapter would need request budgets and a fixture-backed evaluation suite.
 
-## Known Limitations
+## Author
 
-- No authentication in v1
-- `/admin/reset-demo` is intentionally open for demo convenience and would not be production-safe
-- Deterministic engine is not a real LLM
-- Mocked ERP only, with no live WhatsApp or Odoo integration
+Muhammad Gharis Javed — AI Engineer / AI Architect · github.com/gharisj3 · linkedin.com/in/muhammadgharis-javed
