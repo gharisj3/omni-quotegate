@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -50,7 +50,9 @@ class AIQuoteEngine:
         requested_qty = int(qty_match.group(1)) if qty_match else 1
 
         discount_match = re.search(r"(\d+)\s*%\s*discount", message)
-        requested_discount = Decimal(discount_match.group(1)) if discount_match else Decimal("0")
+        requested_discount = (
+            Decimal(discount_match.group(1)) if discount_match else Decimal(0)
+        )
         if "usual discount" in message or "my usual discount" in message:
             customer = inquiry.customer
             requested_discount = Decimal(customer.standard_discount_percent)
@@ -119,7 +121,9 @@ class AIQuoteEngine:
         reason_parts: list[str] = []
 
         if matched_product:
-            stock_check = self.erp.check_stock(matched_product.id, classification.requested_qty)
+            stock_check = self.erp.check_stock(
+                matched_product.id, classification.requested_qty
+            )
             if stock_check.available_qty == 0:
                 risk_flags.append("OUT_OF_STOCK")
             elif stock_check.is_short:
@@ -175,9 +179,11 @@ class AIQuoteEngine:
 
         total_before_discount = subtotal
         discount_amount = (
-            total_before_discount * requested_discount / Decimal("100")
+            total_before_discount * requested_discount / Decimal(100)
         ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        total_amount = (total_before_discount - discount_amount).quantize(Decimal("0.01"))
+        total_amount = (total_before_discount - discount_amount).quantize(
+            Decimal("0.01")
+        )
         inquiry.estimated_value = total_amount
 
         if matched_product:
@@ -195,22 +201,27 @@ class AIQuoteEngine:
 
         if requested_discount > Decimal(customer.standard_discount_percent):
             reason_parts.append("discount review")
-        if matched_product and classification.requested_qty > matched_product.stock_available:
+        if (
+            matched_product
+            and classification.requested_qty > matched_product.stock_available
+        ):
             reason_parts.append("stock review")
         if credit_flags:
             reason_parts.append("credit review")
         if matched_product and not matched_product.saleable:
             reason_parts.append("saleability review")
-        if total_amount > Decimal("250000"):
+        if total_amount > Decimal(250000):
             reason_parts.append("high value review")
 
-        risk_summary = ", ".join(risk_flags) if risk_flags else "No material risk flags."
+        risk_summary = (
+            ", ".join(risk_flags) if risk_flags else "No material risk flags."
+        )
         if matched_product:
-            availability_sentence = (
-                f"We found {matched_product.name} with {matched_product.stock_available} units currently available out of {classification.requested_qty} requested."
-            )
+            availability_sentence = f"We found {matched_product.name} with {matched_product.stock_available} units currently available out of {classification.requested_qty} requested."
         else:
-            availability_sentence = "We could not confidently match a saleable product from the inquiry."
+            availability_sentence = (
+                "We could not confidently match a saleable product from the inquiry."
+            )
         approval_sentence = (
             f" This quote requires internal approval due to {' and '.join(dict.fromkeys(reason_parts))}."
             if approval_required
@@ -223,7 +234,9 @@ class AIQuoteEngine:
             f"{approval_sentence}"
         )
 
-        quote_draft = inquiry.quote_draft or QuoteDraft(inquiry_id=inquiry.id, customer_id=customer.id)
+        quote_draft = inquiry.quote_draft or QuoteDraft(
+            inquiry_id=inquiry.id, customer_id=customer.id
+        )
         quote_draft.status = "pending_approval" if approval_required else "drafted"
         quote_draft.subtotal = subtotal
         quote_draft.discount_percent = requested_discount
@@ -263,7 +276,9 @@ class AIQuoteEngine:
                 requested_by="ai_engine",
             )
             approval_request.status = "pending"
-            approval_request.reason = ", ".join(dict.fromkeys(reason_parts)) or "manual review"
+            approval_request.reason = (
+                ", ".join(dict.fromkeys(reason_parts)) or "manual review"
+            )
             approval_request.risk_flags_json = ",".join(risk_flags)
             self.db.add(approval_request)
             self.db.flush()
@@ -300,7 +315,9 @@ def analyze_inquiry(db: Session, inquiry_id: int) -> Inquiry:
     inquiry.inquiry_type = classification.inquiry_type
     inquiry.status = "analyzed"
     if matched_product:
-        inquiry.estimated_value = Decimal(matched_product.list_price) * classification.requested_qty
+        inquiry.estimated_value = (
+            Decimal(matched_product.list_price) * classification.requested_qty
+        )
         write_audit_event(
             db,
             entity_type="product",

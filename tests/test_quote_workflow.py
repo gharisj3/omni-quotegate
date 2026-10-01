@@ -12,10 +12,13 @@ from app.main import app
 from app.models import ApprovalRequest, AuditEvent, Inquiry
 from app.seed import reset_and_seed
 
-
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_omni_quotegate.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, future=True)
-TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, future=True
+)
+TestingSessionLocal = sessionmaker(
+    bind=engine, autoflush=False, autocommit=False, future=True
+)
 
 
 @pytest.fixture()
@@ -64,13 +67,17 @@ def test_approval_required_when_discount_exceeds_standard(client: TestClient):
 def test_approval_required_when_customer_near_credit_limit(client: TestClient):
     response = client.post("/api/v1/inquiries/3/draft-quote")
     assert response.status_code == 200
-    assert "CUSTOMER_NEAR_CREDIT_LIMIT" in response.json()["quote_draft"]["risk_summary"]
+    assert (
+        "CUSTOMER_NEAR_CREDIT_LIMIT" in response.json()["quote_draft"]["risk_summary"]
+    )
 
 
 def test_approval_required_when_customer_over_credit_limit(client: TestClient):
     response = client.post("/api/v1/inquiries/5/draft-quote")
     assert response.status_code == 200
-    assert "CUSTOMER_OVER_CREDIT_LIMIT" in response.json()["quote_draft"]["risk_summary"]
+    assert (
+        "CUSTOMER_OVER_CREDIT_LIMIT" in response.json()["quote_draft"]["risk_summary"]
+    )
 
 
 def test_approving_updates_quote_and_inquiry_status(client: TestClient):
@@ -94,3 +101,24 @@ def test_audit_events_created_during_quote_workflow(client: TestClient):
         assert "inquiry_created" in event_types
         assert "quote_drafted" in event_types
         assert "approval_requested" in event_types
+
+
+def test_rejection_reason_is_required_and_written_to_audit(client: TestClient):
+    client.post("/api/v1/inquiries/1/draft-quote")
+    approval_id = client.get("/api/v1/approvals").json()[0]["id"]
+
+    denied = client.post(f"/api/v1/approvals/{approval_id}/reject")
+    assert denied.status_code == 422
+
+    reason = "Requested quantity exceeds available stock."
+    response = client.post(
+        f"/api/v1/approvals/{approval_id}/reject", params={"reason": reason}
+    )
+    assert response.status_code == 200
+    assert response.json()["decision_note"] == reason
+
+    with TestingSessionLocal() as db:
+        event = db.scalars(
+            select(AuditEvent).where(AuditEvent.event_type == "approval_rejected")
+        ).one()
+        assert reason in event.payload_json

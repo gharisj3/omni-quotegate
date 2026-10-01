@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 
 
 @dataclass(slots=True)
@@ -21,6 +21,6 @@ class Settings:
 settings = Settings()
 
 
-def format_currency(amount: Decimal | float | int) -> str:
+def format_currency(amount: Decimal | float) -> str:
     value = Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     return f"{settings.currency_symbol}{value:,.2f}"

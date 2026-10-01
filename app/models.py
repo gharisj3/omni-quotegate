@@ -22,12 +22,16 @@ class Customer(Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     credit_limit: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     current_balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    standard_discount_percent: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False)
+    standard_discount_percent: Mapped[Decimal] = mapped_column(
+        Numeric(5, 2), nullable=False
+    )
     risk_level: Mapped[str] = mapped_column(String(50), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow, nullable=False
+    )
 
-    inquiries: Mapped[list["Inquiry"]] = relationship(back_populates="customer")
-    quote_drafts: Mapped[list["QuoteDraft"]] = relationship(back_populates="customer")
+    inquiries: Mapped[list[Inquiry]] = relationship(back_populates="customer")
+    quote_drafts: Mapped[list[QuoteDraft]] = relationship(back_populates="customer")
 
 
 class Product(Base):
@@ -41,7 +45,9 @@ class Product(Base):
     list_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     saleable: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     reorder_level: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow, nullable=False
+    )
 
 
 class Inquiry(Base):
@@ -55,20 +61,26 @@ class Inquiry(Base):
     inquiry_type: Mapped[str | None] = mapped_column(String(100))
     assigned_to: Mapped[str | None] = mapped_column(String(100))
     estimated_value: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow, nullable=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow, onupdate=utcnow, nullable=False
     )
 
-    customer: Mapped["Customer"] = relationship(back_populates="inquiries")
-    quote_draft: Mapped["QuoteDraft | None"] = relationship(back_populates="inquiry", uselist=False)
+    customer: Mapped[Customer] = relationship(back_populates="inquiries")
+    quote_draft: Mapped[QuoteDraft | None] = relationship(
+        back_populates="inquiry", uselist=False
+    )
 
 
 class QuoteDraft(Base):
     __tablename__ = "quote_drafts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    inquiry_id: Mapped[int] = mapped_column(ForeignKey("inquiries.id"), unique=True, nullable=False)
+    inquiry_id: Mapped[int] = mapped_column(
+        ForeignKey("inquiries.id"), unique=True, nullable=False
+    )
     customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), nullable=False)
     status: Mapped[str] = mapped_column(String(50), default="drafted", nullable=False)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
@@ -77,19 +89,23 @@ class QuoteDraft(Base):
     total_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     customer_reply_draft: Mapped[str] = mapped_column(Text, nullable=False)
     risk_summary: Mapped[str] = mapped_column(Text, nullable=False)
-    approval_required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    approval_required: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
     created_by_ai: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow, nullable=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow, onupdate=utcnow, nullable=False
     )
 
-    inquiry: Mapped["Inquiry"] = relationship(back_populates="quote_draft")
-    customer: Mapped["Customer"] = relationship(back_populates="quote_drafts")
-    lines: Mapped[list["QuoteLineDraft"]] = relationship(
+    inquiry: Mapped[Inquiry] = relationship(back_populates="quote_draft")
+    customer: Mapped[Customer] = relationship(back_populates="quote_drafts")
+    lines: Mapped[list[QuoteLineDraft]] = relationship(
         back_populates="quote_draft", cascade="all, delete-orphan"
     )
-    approval_request: Mapped["ApprovalRequest | None"] = relationship(
+    approval_request: Mapped[ApprovalRequest | None] = relationship(
         back_populates="quote_draft", uselist=False, cascade="all, delete-orphan"
     )
 
@@ -98,7 +114,9 @@ class QuoteLineDraft(Base):
     __tablename__ = "quote_line_drafts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    quote_draft_id: Mapped[int] = mapped_column(ForeignKey("quote_drafts.id"), nullable=False)
+    quote_draft_id: Mapped[int] = mapped_column(
+        ForeignKey("quote_drafts.id"), nullable=False
+    )
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"), nullable=False)
     requested_qty: Mapped[int] = mapped_column(Integer, nullable=False)
     available_qty: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -107,25 +125,29 @@ class QuoteLineDraft(Base):
     line_total: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     stock_warning: Mapped[str | None] = mapped_column(String(255))
 
-    quote_draft: Mapped["QuoteDraft"] = relationship(back_populates="lines")
-    product: Mapped["Product"] = relationship()
+    quote_draft: Mapped[QuoteDraft] = relationship(back_populates="lines")
+    product: Mapped[Product] = relationship()
 
 
 class ApprovalRequest(Base):
     __tablename__ = "approval_requests"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    quote_draft_id: Mapped[int] = mapped_column(ForeignKey("quote_drafts.id"), unique=True, nullable=False)
+    quote_draft_id: Mapped[int] = mapped_column(
+        ForeignKey("quote_drafts.id"), unique=True, nullable=False
+    )
     status: Mapped[str] = mapped_column(String(50), default="pending", nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     risk_flags_json: Mapped[str] = mapped_column(Text, nullable=False)
     requested_by: Mapped[str] = mapped_column(String(100), nullable=False)
     decided_by: Mapped[str | None] = mapped_column(String(100))
     decision_note: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow, nullable=False
+    )
     decided_at: Mapped[datetime | None] = mapped_column(DateTime)
 
-    quote_draft: Mapped["QuoteDraft"] = relationship(back_populates="approval_request")
+    quote_draft: Mapped[QuoteDraft] = relationship(back_populates="approval_request")
 
 
 class AuditEvent(Base):
@@ -138,4 +160,6 @@ class AuditEvent(Base):
     actor: Mapped[str] = mapped_column(String(100), nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     payload_json: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow, nullable=False
+    )

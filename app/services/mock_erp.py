@@ -57,7 +57,8 @@ class MockERPAdapter:
             raise ValueError(f"Customer {customer_id} not found")
         return CustomerContext(
             customer=customer,
-            available_credit=Decimal(customer.credit_limit) - Decimal(customer.current_balance),
+            available_credit=Decimal(customer.credit_limit)
+            - Decimal(customer.current_balance),
         )
 
     def check_stock(self, product_id: int, requested_qty: float) -> StockCheck:
