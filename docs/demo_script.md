@@ -1,6 +1,6 @@
 # Omni QuoteGate 2-Minute Demo Script
 
-1. Open the dashboard and explain the banner: AI can draft and recommend, but only humans approve risky quote actions.
+1. Open the dashboard and explain the banner: the rules engine drafts quotes and flags risk; the separate review routes use a demo reviewer identity without authentication.
 2. Open the inquiry inbox and point out the seeded WhatsApp-style Bosch Drill inquiry.
 3. Select the Bosch Drill inquiry detail page.
 4. Click Analyze inquiry to classify the request and show product/customer context.

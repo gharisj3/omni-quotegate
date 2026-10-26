@@ -40,7 +40,7 @@
 <section class="detail-grid">
     <article class="panel">
         <div class="panel-header">
-            <h3>AI Quote Draft</h3>
+            <h3>Rules-Based Quote Draft</h3>
             <span class="badge {% if inquiry.quote_draft.approval_required %}risk{% else %}approved{% endif %}">
                 {% if inquiry.quote_draft.approval_required %}approval required{% else %}ready{% endif %}
             </span>
@@ -108,7 +108,7 @@
             <span class="badge neutral">{{ event.event_type }}</span>
             <div>
                 <strong>{{ event.message }}</strong>
-                <p>{{ event.actor }} • {{ event.created_at.strftime("%Y-%m-%d %H:%M") }}</p>
+                <p>{{ event.actor }} â€¢ {{ event.created_at.strftime("%Y-%m-%d %H:%M") }}</p>
             </div>
         </div>
         {% endfor %}

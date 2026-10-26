@@ -2,20 +2,20 @@
 
 ## System Overview
 
-Omni QuoteGate is a FastAPI application that demonstrates controlled ERP sales automation. It receives seeded customer inquiries, looks up mocked ERP data, drafts quotes, routes risky actions for human approval, and records each step in an append-only audit trail.
+Omni QuoteGate is a FastAPI application that demonstrates controlled ERP sales automation. It receives seeded customer inquiries, looks up mocked ERP data, drafts quotes, routes flagged quotes to separate demo review routes, and records workflow events. Reviewer identity is not authenticated.
 
 ## Module Overview
 
 - Inquiry Inbox: lists inbound customer requests and their workflow state.
 - ERP Lookup Panel: shows matched product and customer credit context from the mock adapter.
-- AI Quote Draft: deterministic engine that classifies, looks up, and proposes quote drafts.
-- Approval Queue + Audit Timeline: human review surface plus append-only event log.
+- Rules-Based Quote Draft: deterministic engine that classifies, looks up, and proposes quote drafts.
+- Approval Queue + Audit Timeline: demo review surface plus application-written event records.
 
-## AI-Callable vs Human-Only Boundary
+## Draft Workflow and Demo Review Routes
 
 ```mermaid
 flowchart LR
-    subgraph AI["AI-callable tools"]
+    subgraph Draft["Deterministic draft functions"]
         A["classify_inquiry()"]
         B["lookup_product()"]
         C["lookup_customer()"]
@@ -23,14 +23,14 @@ flowchart LR
     end
 
     subgraph DB["State and audit boundary"]
-        E["SQLite / PostgreSQL-ready DB"]
-        F["Append-only Audit Log"]
+        E["SQLite database"]
+        F["Audit event records"]
     end
 
-    subgraph Human["Human-only actions"]
+    subgraph Reviewer["Separate demo review routes"]
         G["Approve quote"]
         H["Reject quote"]
-        I["Final business decision write"]
+        I["Quote review status"]
     end
 
     A --> E
@@ -45,7 +45,7 @@ flowchart LR
     I --> E
 ```
 
-The core design principle is that AI can read context and draft a recommendation, but a human must decide risky business actions such as credit-sensitive or stock-constrained quotes.
+The rules engine reads seeded context and drafts a recommendation. Separate routes record quote review decisions. No LLM is called and no authenticated human-only boundary is enforced; a production deployment must add identity and authorization.
 
 ## Mock ERP Adapter
 
@@ -53,7 +53,7 @@ The core design principle is that AI can read context and draft a recommendation
 
 ## Audit Trail Design
 
-Audit events are append-only in application logic. Each meaningful state change writes a human-readable event with JSON payload context so the demo can show how decisions are tracked over time.
+Normal workflow operations insert audit events, but the demo reset route can delete records. These events are not tamper-proof. Each meaningful state change writes a human-readable event with JSON payload context so the demo can show how decisions are tracked over time.
 
 ## Future Odoo XML-RPC Adapter Plan
 

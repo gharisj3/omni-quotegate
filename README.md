@@ -1,14 +1,15 @@
 # Omni QuoteGate
 
+**Status: rules-based demo.** Quote drafting, seeded ERP checks, reviewer routes and audit events are implemented. No LLM or live ERP adapter is used. Reviewer identity is a demo value; authenticated roles and production operations remain future work.
+
 A controlled quotation workflow that keeps approval decisions and their reasons visible in an auditable sales process.
 
-[![CI](https://github.com/gharisj3/omni-quotegate/actions/workflows/ci.yml/badge.svg)](https://github.com/gharisj3/omni-quotegate/actions/workflows/ci.yml)
 
 ## Why this exists
 
 Sales teams need to respond to quote requests while checking stock, discounts, and customer credit. This reference app demonstrates deterministic quote drafting with a required human approval step for flagged cases. Its current quote engine is rules based; it does not call an LLM.
 
-This is a public reimplementation of patterns I've used in production client work. Client code and data are not included.
+This public reference implementation uses synthetic examples. It demonstrates the patterns in this repository; it does not establish production client usage.
 
 ## Architecture
 
@@ -62,7 +63,7 @@ Fixture mode: seeded local ERP records; no API or external service call.
 
 ## Evaluation and testing
 
-The local pytest suite passes 12 tests. It checks approval rules, quote creation, audit writes, and that a rejection without a reason is refused while a supplied reason is persisted. `ruff check .` and `ruff format --check .` pass locally.
+Run `python -m pytest` to verify the current suite locally. It checks approval rules, quote creation, audit writes, and that a rejection without a reason is refused while a supplied reason is persisted. `ruff check .` and `ruff format --check .` pass locally.
 
 ## Design decisions and trade-offs
 
@@ -77,4 +78,4 @@ A deployed service would add authenticated user identity, authorization by role 
 
 ## Author
 
-Muhammad Gharis Javed — AI Engineer / AI Architect · github.com/gharisj3 · linkedin.com/in/muhammadgharis-javed
+Muhammad Gharis Javed â€” AI Engineer / AI Architect Â· github.com/gharisj3 Â· linkedin.com/in/muhammadgharis-javed

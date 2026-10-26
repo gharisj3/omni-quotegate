@@ -4,7 +4,7 @@
     <div>
         <p class="eyebrow">Controlled ERP Sales Automation</p>
         <h2>Dashboard</h2>
-        <p class="banner">AI can draft and recommend. Only humans can approve risky quote actions.</p>
+        <p class="banner">Rules-based demo with seeded data. Review flagged quotes before approval.</p>
     </div>
 </section>
 
@@ -37,7 +37,7 @@
             <span class="badge neutral">{{ event.event_type }}</span>
             <div>
                 <strong>{{ event.message }}</strong>
-                <p>{{ event.actor }} • {{ event.created_at.strftime("%Y-%m-%d %H:%M") }}</p>
+                <p>{{ event.actor }} â€¢ {{ event.created_at.strftime("%Y-%m-%d %H:%M") }}</p>
             </div>
         </div>
         {% endfor %}
